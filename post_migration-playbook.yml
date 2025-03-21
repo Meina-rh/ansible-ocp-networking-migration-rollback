@@ -1,13 +1,14 @@
+---
 - name: Post Migration
   hosts: localhost
-  gather_facts: no
+  gather_facts: false
   roles:
     - role: post_migration
       vars:
         checks:
-          - "oc wait co --all --for='condition=Available=True' --timeout=60s"
-          - "oc wait co --all --for='condition=Progressing=False' --timeout=60s"
-          - "oc wait co --all --for='condition=Degraded=False' --timeout=60s"
+          - oc wait co --all --for='condition=Available=True' --timeout=60s
+          - oc wait co --all --for='condition=Progressing=False' --timeout=60s
+          - oc wait co --all --for='condition=Degraded=False' --timeout=60s
         expected_network_type: OVNKubernetes
         network_provider_config: openshiftSDNConfig
         namespace: openshift-sdn
