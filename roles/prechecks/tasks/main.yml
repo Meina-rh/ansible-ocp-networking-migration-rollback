@@ -4,39 +4,39 @@
   register: oc_check_result
 
 - name: Display oc client version
-  when: oc_check_result.version is defined
-  ansible.builtin.debug:
+  debug:
     msg: "OpenShift client version: {{ oc_check_result.version }}"
+  when: oc_check_result.version is defined
 
 - name: Fail if oc binary or client is not installed or functional
-  when: not oc_check_result.version
-  ansible.builtin.fail:
+  fail:
     msg: "{{ oc_check_result.msg }}"
+  when: not oc_check_result.version
 
 - name: Check if KUBECONFIG is set and file exists
   check_kubeconfig:
   register: kubeconfig_result
 
 - name: Show the KUBECONFIG path
-  when: not kubeconfig_result.failed
-  ansible.builtin.debug:
+  debug:
     msg: "KUBECONFIG file found at: {{ kubeconfig_result.kubeconfig_path }}"
+  when: not kubeconfig_result.failed
 
 - name: Fail if KUBECONFIG is not set or file does not exist
-  when: kubeconfig_result.failed
-  ansible.builtin.fail:
+  fail:
     msg: "{{ kubeconfig_result.msg }}"
+  when: kubeconfig_result.failed
 
 - name: Check if the current user is 'system:admin' or a user with cluster admin rights using custom module
   check_whoami:
   register: oc_whoami_result
 
 - name: Show result of oc whoami check
-  when: not oc_whoami_result.failed
-  ansible.builtin.debug:
+  debug:
     msg: "The output of `oc whoami`: {{ oc_whoami_result.message }}"
+  when: not oc_whoami_result.failed
 
 - name: Fail if `oc whoami` is not 'system:admin' or does not have cluster admin rights.
-  when: oc_whoami_result.failed
-  ansible.builtin.fail:
+  fail:
     msg: "{{ oc_whoami_result.msg }}"
+  when: oc_whoami_result.failed

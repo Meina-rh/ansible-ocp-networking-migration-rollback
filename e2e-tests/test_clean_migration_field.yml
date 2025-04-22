@@ -1,9 +1,8 @@
----
 - name: End-to-End Tests for `clean_migration_field` module
   hosts: localhost
-  gather_facts: false
+  gather_facts: no
   vars:
-    clean_migration_timeout: 60 # Lower timeout for testing
+    clean_migration_timeout: 60  # Lower timeout for testing
 
   tasks:
     - name: Run `clean_migration_field` module
@@ -19,14 +18,14 @@
       assert:
         that:
           - "'Migration field cleared.' in clean_migration_result.msg"
-        fail_msg: Module should have cleared the migration field but failed!
+        fail_msg: "Module should have cleared the migration field but failed!"
       when: not clean_migration_result.failed
 
     - name: Assert failure when timeout occurs
       assert:
         that:
           - "'Timeout waiting for migration field to be cleared.' in clean_migration_result.msg"
-        fail_msg: Timeout behavior is not working as expected!
+        fail_msg: "Timeout behavior is not working as expected!"
       when: clean_migration_result.failed and 'Timeout' in clean_migration_result.msg
 
     - name: Fail if the module fails unexpectedly

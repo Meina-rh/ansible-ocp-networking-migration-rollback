@@ -1,7 +1,6 @@
----
 - name: Test `check_whoami` custom module
   hosts: localhost
-  gather_facts: false
+  gather_facts: no
 
   tasks:
     - name: Run check_whoami module
@@ -17,7 +16,7 @@
       assert:
         that:
           - "'system:admin' in oc_whoami_result.message"
-        fail_msg: User is not `system:admin`, test failed!
+        fail_msg: "User is not `system:admin`, test failed!"
       when: not oc_whoami_result.failed
 
     - name: Fail if the module fails incorrectly
