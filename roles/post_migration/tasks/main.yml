@@ -8,8 +8,8 @@
   register: result
 
 - name: Display the cluster operators status
-  shell: oc get co
   when: result.changed
+  ansible.builtin.shell: oc get co
 
 - name: Check the CNI network provider
   check_network_provider:
@@ -17,7 +17,7 @@
   register: result
 
 - name: Display the result of the network provider check
-  debug:
+  ansible.builtin.debug:
     msg: "{{ result.msg }}"
 
 - name: Check if all cluster nodes are in Ready state
@@ -25,16 +25,16 @@
   register: node_status
 
 - name: Notify user about NotReady nodes
-  debug:
-    msg: >
-      The following nodes are not in the Ready state: 
-      {{ node_status.not_ready_nodes | map(attribute='name') | join(', ') }}.
-      Please investigate machine config daemon pod logs.
-
   when: node_status.not_ready_nodes | length > 0
+  ansible.builtin.debug:
+    msg: >
+      The following nodes are not in the Ready state:  {{ node_status.not_ready_nodes | map(attribute='name') | join(', ') }}. Please investigate machine config daemon
+      pod logs.
+
 
 - name: Display command to list machine config daemon pods
-  debug:
+  when: node_status.not_ready_nodes | length > 0
+  ansible.builtin.debug:
     msg: |
       Run the following command to list machine config daemon pods:
       oc get pod -n openshift-machine-config-operator
@@ -46,19 +46,18 @@
       Run the following command to view logs for each pod:
       oc logs <pod_name> -n openshift-machine-config-operator
 
-  when: node_status.not_ready_nodes | length > 0
 
 - name: Confirm that no pods are in an error state
-  command: oc get pods --all-namespaces -o wide
   register: all_pods
+  ansible.builtin.command: oc get pods --all-namespaces -o wide
 
 - name: Notify user if any pods are in an error state
-  debug:
+  when: "'Error' in all_pods.stdout or 'CrashLoopBackOff' in all_pods.stdout"
+  ansible.builtin.debug:
     msg: |
       Investigate pods that are not in a Running state.
       If necessary, reboot the node where the affected pods are scheduled.
 
-  when: "'Error' in all_pods.stdout or 'CrashLoopBackOff' in all_pods.stdout"
 
 - name: Patch Network.operator.openshift.io and wait for migration field to clear
   clean_migration_field:
@@ -71,7 +70,7 @@
   register: result
 
 - name: Notify user about the result
-  debug:
+  ansible.builtin.debug:
     msg: "{{ result.msg }}"
 
 - name: Check all cluster operators back to normal
