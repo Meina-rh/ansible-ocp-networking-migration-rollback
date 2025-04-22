@@ -1,12 +1,13 @@
 ---
 - name: End-to-End Test for `patch_network` Module
   hosts: localhost
-  gather_facts: false
+  gather_facts: no
   vars:
     valid_network_types:
       - OpenShiftSDN
       - OVNKubernetes
   tasks:
+
     - name: Get OpenShift version (for validation)
       command: oc get clusterversion version -o jsonpath='{.status.desired.version}'
       register: openshift_version_result
@@ -24,18 +25,18 @@
 
     - name: Ensure OpenShift version is valid for migration
       fail:
-        msg: OpenShift version is below 4.12. Migration settings will not be applied.
+        msg: "OpenShift version is below 4.12. Migration settings will not be applied."
       when: version_major | int <= 4 and version_minor | int < 12
 
     # ✅ Test Case 1: Valid Input (OVNKubernetes, Egress Firewall Disabled)
     - name: Run patch_network module with OVNKubernetes
       disable_automatic_migration:
-        network_type: OVNKubernetes
+        network_type: "OVNKubernetes"
         egress_ip: false
         egress_firewall: false
         multicast: false
       register: test_result_valid_ovn
-      ignore_errors: true
+      ignore_errors: yes
       when: disable_auto_migration == true
 
     - name: Debug module output (Valid OVNKubernetes)
@@ -52,10 +53,10 @@
     # ✅ Test Case 2: Valid Input (OpenShiftSDN, Only Multicast Disabled)
     - name: Run patch_network module with OpenShiftSDN
       disable_automatic_migration:
-        network_type: OpenShiftSDN
+        network_type: "OpenShiftSDN"
         multicast: false
       register: test_result_valid_sdn
-      ignore_errors: true
+      ignore_errors: yes
       when: disable_auto_migration == true
 
     - name: Debug module output (Valid OpenShiftSDN)
@@ -72,10 +73,10 @@
     # ❌ Test Case 3: Invalid Network Type
     - name: Run patch_network module with invalid network type
       disable_automatic_migration:
-        network_type: InvalidNetwork
+        network_type: "InvalidNetwork"
         egress_ip: false
       register: test_result_invalid_network
-      ignore_errors: true
+      ignore_errors: yes
       when: disable_auto_migration == true
 
     - name: Debug module output (Invalid Network Type)
@@ -85,17 +86,17 @@
     - name: Assert failure for invalid network type
       assert:
         that:
-          - test_result_invalid_network is failed
-          - "'value of network_type must be one of: OVNKubernetes, OpenShiftSDN, got: InvalidNetwork' in test_result_invalid_network.msg"
+            - test_result_invalid_network is failed
+            - "'value of network_type must be one of: OVNKubernetes, OpenShiftSDN, got: InvalidNetwork' in test_result_invalid_network.msg"
       when: test_result_invalid_network is failed
       #when: "'value of network_type must be one of: OVNKubernetes, OpenShiftSDN, got: InvalidNetwork' in test_result_invalid_network.msg"
 
     # ❌ Test Case 4: No Parameters Provided
     - name: Run patch_network module without parameters
       disable_automatic_migration:
-        network_type: OVNKubernetes
+        network_type: "OVNKubernetes"
       register: test_result_no_params
-      ignore_errors: true
+      ignore_errors: yes
       when: disable_auto_migration == true
 
     - name: Debug module output (No Parameters Provided)
@@ -108,6 +109,7 @@
           - test_result_no_params is failed
           - "'No values provided. Automatic migration will be applied.' in test_result_no_params.msg"
       when: test_result_no_params is failed
+
 
     # ✅ Rollback: Revert `spec.migration` to null after test completion
     - name: Revert Migration Field to Null

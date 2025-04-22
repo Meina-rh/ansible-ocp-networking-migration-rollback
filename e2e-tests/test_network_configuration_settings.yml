@@ -1,4 +1,3 @@
----
 - name: End-to-End Test for configure_network_settings module
   hosts: localhost
   gather_facts: false
@@ -17,11 +16,11 @@
         configure_network_type: ovnKubernetes
         mtu: 1400
         geneve_port: 6081
-        ipv4_subnet: 192.168.1.0/24
+        ipv4_subnet: "192.168.1.0/24"
         retries: 3
         delay: 5
       register: test_result_valid_ovn
-      ignore_errors: true
+      ignore_errors: yes
 
     - name: Debug module output (Valid ovnKubernetes)
       debug:
@@ -42,8 +41,8 @@
           - network_data.spec.defaultNetwork.ovnKubernetesConfig.mtu == 1400
           - network_data.spec.defaultNetwork.ovnKubernetesConfig.genevePort == 6081
           - network_data.spec.defaultNetwork.ovnKubernetesConfig.v4InternalSubnet == "192.168.1.0/24"
-        fail_msg: Network configuration does not match expected values!
-        success_msg: Network configuration successfully updated!
+        fail_msg: "Network configuration does not match expected values!"
+        success_msg: "Network configuration successfully updated!"
 
     - name: Revert network configuration to default
       configure_network_settings:
@@ -74,8 +73,8 @@
           - reverted_network_data.spec.defaultNetwork.ovnKubernetesConfig.genevePort == 6081
           # TODO check what different value could be added
           - reverted_network_data.spec.defaultNetwork.ovnKubernetesConfig.v4InternalSubnet == "192.168.1.0/24"
-        fail_msg: Reverted network configuration does not match expected values!
-        success_msg: Network configuration successfully reverted to default!
+        fail_msg: "Reverted network configuration does not match expected values!"
+        success_msg: "Network configuration successfully reverted to default!"
 
     - name: Apply network configuration changes
       configure_network_settings:
@@ -86,14 +85,15 @@
       debug:
         msg: "{{ patch_result.msg }}"
 
+
     # ✅ Test Case 1: Valid Input (ovnKubernetes, MTU and Geneve Port)
     - name: Run patch_network module with ovnKubernetes
       configure_network_settings:
-        configure_network_type: ovnKubernetes
+        configure_network_type: "ovnKubernetes"
         mtu: 1400
         geneve_port: 6081
       register: test_result_valid_ovn
-      ignore_errors: true
+      ignore_errors: yes
 
     - name: Debug module output (Valid ovnKubernetes)
       debug:
@@ -111,14 +111,15 @@
           - '"6081" in check_ovn_config.stdout'
       when: test_result_valid_ovn is success
 
-    # ✅ Test Case 2: Valid Input (openshiftSDN, MTU and VXLAN Port)
+
+# ✅ Test Case 2: Valid Input (openshiftSDN, MTU and VXLAN Port)
     - name: Run patch_network module with openshiftSDN
       configure_network_settings:
-        configure_network_type: openshiftSDN
+        configure_network_type: "openshiftSDN"
         mtu: 1450
         vxlanPort: 4789
       register: test_result_valid_sdn
-      ignore_errors: true
+      ignore_errors: yes
 
     - name: Debug module output (Valid openshiftSDN)
       debug:
@@ -136,13 +137,15 @@
           - '"4789" in check_sdn_config.stdout'
       when: test_result_valid_sdn is success
 
+
+
     # ❌ Test Case 3: Invalid Network Type
     - name: Run patch_network module with invalid network type
       configure_network_settings:
-        configure_network_type: invalidNetwork
+        configure_network_type: "invalidNetwork"
         mtu: 1400
       register: test_result_invalid_network
-      ignore_errors: true
+      ignore_errors: yes
 
     - name: Debug module output (Invalid Network Type)
       debug:
@@ -158,9 +161,9 @@
     # ❌ Test Case 4: No Parameters Provided
     - name: Run patch_network module without parameters
       configure_network_settings:
-        configure_network_type: ovnKubernetes
+        configure_network_type: "ovnKubernetes"
       register: test_result_no_params
-      ignore_errors: true
+      ignore_errors: yes
 
     - name: Debug module output (No Parameters Provided)
       debug:
@@ -176,10 +179,10 @@
     # ❌ Test Case 5: Invalid Parameters for Network Type
     - name: Run patch_network module with vxlanPort in ovnKubernetes
       configure_network_settings:
-        configure_network_type: ovnKubernetes
+        configure_network_type: "ovnKubernetes"
         vxlanPort: 4789
       register: test_result_invalid_param
-      ignore_errors: true
+      ignore_errors: yes
 
     - name: Debug module output (Invalid Parameter for ovnKubernetes)
       debug:
@@ -194,10 +197,10 @@
     # ✅ Test Case 6: Check Mode (Dry Run)
     - name: Run patch_network module in check mode
       configure_network_settings:
-        configure_network_type: ovnKubernetes
+        configure_network_type: "ovnKubernetes"
         mtu: 1400
       register: test_result_check_mode
-      check_mode: true
+      check_mode: yes
 
     - name: Debug module output (Check Mode)
       debug:

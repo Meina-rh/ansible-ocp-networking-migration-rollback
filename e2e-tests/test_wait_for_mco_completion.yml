@@ -1,7 +1,7 @@
 ---
 - name: End-to-End Test for wait_for_mco_completion Module (Real OpenShift)
   hosts: localhost
-  gather_facts: false
+  gather_facts: no
   vars:
     mcp_completion_timeout: 2700
   tasks:
@@ -24,7 +24,7 @@
 
     - name: debug mcp
       debug:
-        msg: DEBUG {{ mcp_updated }}
+        msg: "DEBUG {{ mcp_updated }}"
 
     - name: Assert that MCP is UPDATED=True
       assert:

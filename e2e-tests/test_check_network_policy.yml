@@ -1,10 +1,9 @@
----
 - name: End-to-End Tests for `check_network_policy_mode` module
   hosts: localhost
-  gather_facts: false
+  gather_facts: no
   vars:
-    network_policy_mode: NetworkPolicy # Expected mode
-    timeout_value: 60 # Lower timeout for testing
+    network_policy_mode: "NetworkPolicy"  # Expected mode
+    timeout_value: 60  # Lower timeout for testing
 
   tasks:
     - name: Run `check_network_policy_mode` module
@@ -20,28 +19,28 @@
       assert:
         that:
           - "'The cluster is correctly configured with NetworkPolicy isolation mode' in network_policy_result.msg"
-        fail_msg: Cluster should be using NetworkPolicy, but it is not!
+        fail_msg: "Cluster should be using NetworkPolicy, but it is not!"
       when: "'The cluster is correctly configured with NetworkPolicy isolation mode' in network_policy_result.msg"
 
     - name: Assert failure when NetworkPolicy is not set
       assert:
         that:
           - "'The cluster is not configured with NetworkPolicy isolation mode' in network_policy_result.msg"
-        fail_msg: Module did not detect missing NetworkPolicy mode!
+        fail_msg: "Module did not detect missing NetworkPolicy mode!"
       when: network_policy_result.failed
 
     - name: Test unknown mode handling
       assert:
         that:
           - "'Could not determine the isolation mode' in network_policy_result.msg"
-        fail_msg: Module did not handle unknown mode properly!
+        fail_msg: "Module did not handle unknown mode properly!"
       when: "'unknown' in network_policy_result.msg"
 
     - name: Test timeout behavior
       assert:
         that:
           - "'Timeout waiting for network policy data' in network_policy_result.msg"
-        fail_msg: Timeout handling did not work as expected!
+        fail_msg: "Timeout handling did not work as expected!"
       when: network_policy_result.failed and 'Timeout' in network_policy_result.msg
 
     - name: Fail if the module fails unexpectedly

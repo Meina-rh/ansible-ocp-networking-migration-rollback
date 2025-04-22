@@ -14,13 +14,14 @@
 
 - name: Display conflicting CIDRs if found
   when: result.failed
-  ansible.builtin.debug:
+  debug:
     msg: >
-      Conflicting CIDRs detected: {{ result.conflicting_cidrs }}. CIDRs in use: {{ result.used_cidrs }}.
+      Conflicting CIDRs detected: {{ result.conflicting_cidrs }}.
+      CIDRs in use: {{ result.used_cidrs }}.
 
 - name: Inform the user that no conflicts were found
   when: result.msg == "No conflicting CIDR ranges found."
-  ansible.builtin.debug:
+  debug:
     msg: "{{ result.msg }}"
 
 - name: Check if the cluster is configured with NetworkPolicy isolation mode
@@ -29,26 +30,27 @@
 
 - name: Notify user if NetworkPolicy isolation mode is not set
   when: result.failed
-  ansible.builtin.debug:
+  debug:
     msg: "{{ result.msg }}"
 
 - name: Confirm that NetworkPolicy isolation mode is set
   when: not result.failed
-  ansible.builtin.debug:
+  debug:
     msg: "{{ result.msg }}"
+
 
 - name: Patch Network.operator.openshift.io and wait for migration field to clear
   clean_migration_field:
     timeout: "{{ clean_migration_timeout }}"
 
 - name: Check if disable auto migration is set
-  failed_when: disable_auto_migration is not defined
-  ansible.builtin.set_fact:
+  set_fact:
     disable_auto_migration: "{{ disable_auto_migration }}"
+  failed_when: disable_auto_migration is not defined
 
 - name: Display message when disable_auto_migration is set to true
-  ansible.builtin.debug:
-    msg: disable_auto_migration is set to {{ disable_auto_migration }}.
+  debug:
+    msg: "disable_auto_migration is set to {{ disable_auto_migration }}."
 
 - name: Change network type to trigger MCO update
   when: disable_auto_migration == false
@@ -64,16 +66,15 @@
   failed_when: openshift_version_result.version is not defined
 
 - name: Parse OpenShift version and determine if it's >= 4.12
-  ansible.builtin.set_fact:
+  set_fact:
     version_major: "{{ openshift_version_result.version.split('.')[0] | int }}"
     version_minor: "{{ openshift_version_result.version.split('.')[1] | int }}"
 
 - name: Warn if OpenShift version is < 4.12
+  debug:
+    msg: "Warning: The OpenShift version is {{ ocp_version }}. EgressIP, EgressFirewall, and multicast features of SDN won't be automatically migrated in OVNKubernetes. You need to manually configure them."
   when: version_major | int == 4 and version_minor | int <= 11
 
-  ansible.builtin.debug:
-    msg: "Warning: The OpenShift version is {{ ocp_version }}. EgressIP, EgressFirewall, and multicast features of SDN won't be automatically migrated in OVNKubernetes.
-      You need to manually configure them."
 
 - name: Apply SDN Migration Settings if OpenShift is 4.12 or Higher
   block:
@@ -88,7 +89,7 @@
     - name: Display Patch Result
       debug:
         var: patch_result
-  when: version_major | int == 4 and version_minor | int >= 12 and disable_auto_migration == true # One-time check before executing block
+  when: version_major | int == 4 and version_minor | int >= 12 and disable_auto_migration == true  # One-time check before executing block
 
 - name: Customize network settings if parameters are provided
   configure_network_settings:
@@ -101,7 +102,7 @@
   register: patch_result
 
 - name: Debug patch result
-  ansible.builtin.debug:
+  debug:
     msg: "{{ patch_result.msg }}"
 
 - name: Wait until MCO starts applying new machine config to nodes
@@ -110,17 +111,18 @@
   register: mco_status
 
 - name: Print MCO status message
-  ansible.builtin.debug:
+  debug:
     msg: "{{ mco_status.msg }}"
 
 - name: Wait for MCO to finish its work
   wait_for_mco_completion:
     timeout: "{{ mcp_completion_timeout }}"
 
+
 - name: Verify machine configuration status on nodes
   verify_machine_config:
     timeout: "{{ verify_machine_config_timeout }}"
-    network_type: OVNKubernetes
+    network_type: "OVNKubernetes"
 
 - name: Trigger OVN-Kubernetes deployment
   trigger_network_type:
@@ -133,7 +135,7 @@
   register: network_co_status
 
 - name: Display the status of the Network Cluster Operator
-  ansible.builtin.debug:
+  debug:
     msg: "{{ network_co_status.msg }}"
 
 - name: Wait for Multus pods to restart
