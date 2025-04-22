@@ -1,6 +1,7 @@
+---
 - name: End-to-End Tests for `get_ocp_version` module
   hosts: localhost
-  gather_facts: no
+  gather_facts: false
   vars:
     test_retries: 3
     test_delay: 5
@@ -24,15 +25,15 @@
     - name: Assert success when OpenShift version is retrieved
       assert:
         that:
-          - "ocp_version_result.version is defined"
-        fail_msg: "Module should have successfully retrieved the OpenShift version!"
+          - ocp_version_result.version is defined
+        fail_msg: Module should have successfully retrieved the OpenShift version!
       when: not ocp_version_result.failed
 
     - name: Assert failure when command execution fails
       assert:
         that:
           - "'Command failed after' in ocp_version_result.msg"
-        fail_msg: "Module should fail when `oc` command is unavailable!"
+        fail_msg: Module should fail when `oc` command is unavailable!
       when: ocp_version_result.failed
 
     - name: Extract OpenShift major and minor version
@@ -44,7 +45,6 @@
       set_fact:
         version_major: "{{ version_major | int }}"
         version_minor: "{{ version_minor | int }}"
-
 
     - name: Print OpenShift major version
       debug:
@@ -68,5 +68,4 @@
         that:
           - version_major | int >= 4
           - (version_major | int == 4 and version_minor | int >= 12) or version_major | int > 4
-        fail_msg: "OpenShift version must be 4.12 or higher!"
-
+        fail_msg: OpenShift version must be 4.12 or higher!

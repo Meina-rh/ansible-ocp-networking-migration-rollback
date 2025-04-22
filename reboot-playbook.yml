@@ -1,5 +1,6 @@
+---
 - name: Reboot nodes
   hosts: localhost
-  gather_facts: no
+  gather_facts: false
   roles:
     - role: reboot_nodes
