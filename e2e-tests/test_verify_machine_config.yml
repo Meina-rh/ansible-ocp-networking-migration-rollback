@@ -1,17 +1,16 @@
 ---
 - name: End-to-End Test for verify_machine_config Module (Real OpenShift)
   hosts: localhost
-  gather_facts: no
+  gather_facts: false
   vars:
     verify_machine_config_timeout: 15
   tasks:
-
     - name: Run verify_machine_config module (Failure due to config mismatch)
       verify_machine_config:
         timeout: "{{ verify_machine_config_timeout }}"
-        network_type: "OVNKubernetes"
+        network_type: OVNKubernetes
       register: result_config_mismatch
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Debug module output (Config Mismatch)
       debug:
@@ -27,9 +26,9 @@
     - name: Run verify_machine_config module (Failure due to node not ready)
       verify_machine_config:
         timeout: "{{ verify_machine_config_timeout }}"
-        network_type: "OVNKubernetes"
+        network_type: OVNKubernetes
       register: result_node_not_ready
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Debug module output (Node Not Ready)
       debug:
@@ -45,9 +44,9 @@
     - name: Run verify_machine_config module (Failure due to missing ExecStart)
       verify_machine_config:
         timeout: "{{ verify_machine_config_timeout }}"
-        network_type: "OVNKubernetes"
+        network_type: OVNKubernetes
       register: result_execstart_missing
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Debug module output (Missing ExecStart) #TODO Fix the returns from module to fetch execstart so that we can test
       debug:
@@ -63,7 +62,7 @@
     - name: Run verify_machine_config module (Success scenario)
       verify_machine_config:
         timeout: "{{ verify_machine_config_timeout }}"
-        network_type: "OVNKubernetes"
+        network_type: OVNKubernetes
       register: result_success
 
     - name: Debug module output (Success)
@@ -76,4 +75,3 @@
           - result_success is success
           - result_success.msg == "All machine configurations are correct."
       when: result_success is success
-

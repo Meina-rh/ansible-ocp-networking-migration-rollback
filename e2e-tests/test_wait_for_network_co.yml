@@ -1,11 +1,10 @@
 ---
 - name: End-to-End Test for wait_for_network_co Module (Real OpenShift)
   hosts: localhost
-  gather_facts: no
+  gather_facts: false
   vars:
-    ovn_co_timeout: 120  # Set a reasonable timeout for the test
+    ovn_co_timeout: 120 # Set a reasonable timeout for the test
   tasks:
-
     - name: Run wait_for_network_co module (Success scenario)
       wait_for_network_co:
         timeout: "{{ ovn_co_timeout }}"
@@ -24,9 +23,9 @@
 
     - name: Run wait_for_network_co module (Failure due to timeout)
       wait_for_network_co:
-        timeout: 1  # Force an immediate timeout
+        timeout: 1 # Force an immediate timeout
       register: result_timeout
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Debug module output (Timeout Failure)
       debug:
